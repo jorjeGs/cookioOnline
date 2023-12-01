@@ -1,0 +1,36 @@
+.feed-button{
+    background-color: #584022;
+}
+
+.feed-button:hover{
+    background-color: #EAB308;
+    transition-duration: 200ms;
+}
+
+.feed-button:hover h1{
+    color: black;
+    transition-duration: 200ms;
+}
+
+.feed-button:hover .misRecetasIcon{
+    color: black;
+    transition-duration: 200ms;
+}
+
+.feed-button:hover .busquedaIcon{
+    color: black;
+    transition-duration: 200ms;
+}
+
+.feed-button:hover .usuarioIcon{
+    color: black;
+    transition-duration: 200ms;
+}
+
+/* scrolling recipes */
+
+.recipes-container {
+    height: calc(100vh - 160px);
+    /* Otras propiedades */
+    overflow-y: scroll; /* Habilita el scroll vertical */
+} 

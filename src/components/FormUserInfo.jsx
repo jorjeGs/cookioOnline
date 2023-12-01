@@ -1,0 +1,115 @@
+import React, { useState } from 'react';
+import LoadingButton from './LoadingButton';
+import useUser from '../hooks/useUser';
+import { updateUser } from '../services/userService';
+import { useNavigate } from 'react-router-dom';
+
+const FormUserInfo = () => {
+    const { user, getUserData } = useUser()
+
+    const [username, setUsername] = useState(user.username);
+    const [profilePic, setProfilePic] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [imageFile, setImageFile] = useState('');
+
+    const navigate = useNavigate();
+
+    //show preview of the image
+    const showImagePreview = (event) => {
+        const input = event.target;
+
+        //also save the image in the state
+        setProfilePic(input.value);
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const vistaPrevia = document.getElementById('vista-previa');
+                vistaPrevia.src = e.target.result;
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        //check if the fields are empty
+        if (!username) {
+            alert('Please fill all the fields');
+            return;
+        }
+        //using a form data object to send the image
+        const formData = new FormData();
+        formData.append('username', username);
+        //not sending the image if the user didn't change it
+        if (imageFile){
+            formData.append('profile_pic', imageFile);
+        }
+
+        //set loading to true
+        setLoading(true);
+
+        //call the updateUser function from the userService
+        await updateUser(user.id, formData).then((res) => {
+            //set loading to false
+            setLoading(false);
+            console.log(res);
+            setUsername('');
+            setProfilePic('');
+            setImageFile('');
+            alert('user updated');
+            //update the user info in the context
+            getUserData(user);
+            //navigate to home
+            navigate('/home/feed');
+        });
+
+    };
+
+    return (
+        <>
+            <div className='recipe-card bg-[#584022] w-3/4 max-h-fit rounded-2xl mx-auto'>
+                <div className='flex flex-row justify-center items-center w-full mt-3'>
+                    <h2 className='recipe-title text-yellow-500 text-4xl'><strong>Editar Perfil</strong></h2>
+                </div>
+                <form className='flex flex-col w-full mt-5 px-8' onSubmit={handleSubmit}>
+                    <div className="flex items-center justify-center w-full mb-4">
+                        <label htmlFor="profile_pic" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-full cursor-pointer bg-[#694c29] hover:bg-[#73552d] ">
+                            {
+                                profilePic ? <img id="vista-previa" className="w-full h-full object-cover rounded-full" alt="Vista previa" />
+                                    : <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg className="w-8 h-8 mb-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                                        </svg>
+                                        <p className="mb-2 text-sm text-white "><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p className="text-xs text-white ">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                    </div>
+                            }
+
+                            <input id="profile_pic" type="file" className="hidden" value={profilePic} onChange={(e) => { showImagePreview(e); setImageFile(e.target.files[0]) }} />
+                        </label>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-white font-bold mb-2" htmlFor="title">
+                            Username
+                        </label>
+                        <input
+                            className="appearance-none w-full py-2 px-3 text-gray-700 text-center leading-tight focus:outline-none focus:shadow-outline rounded-xl"
+                            id="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-center items-center mb-6">
+                        <LoadingButton style="bg-amber-400 w-60 hover:bg-white text-black font-bold py-2 px-4 rounded-3xl border-2 border-amber-400 hover:border-2 focus:outline-none focus:shadow-outline mt-8" text="Save" onClick={handleSubmit} loading={loading} disabled={loading} />
+                    </div>
+                </form>
+            </div>
+        </>
+    );
+};
+
+export default FormUserInfo;
